@@ -15,8 +15,7 @@ type DbSource struct {
 func main() {
 
 	ds := DbSource{
-		h: "172.16.5.133:4000",
-		//h:  "10.2.102.28:4000",
+		h:  "172.16.5.133:4000",
 		u:  "root",
 		p:  "",
 		db: "tp",
@@ -29,10 +28,10 @@ func main() {
 
 	j := tpc_ds.Job{
 		Conn: *conn,
-		Do:   "rows",
+		Do:   "partition",
 	}
 
-	job := "checkResultSet"
+	job := "partition"
 
 	switch job {
 	case "partition":
@@ -41,6 +40,8 @@ func main() {
 		j.AnalyzePartition()
 	case "checkResultSet":
 		j.CheckResultSet()
+	case "checkQueries":
+		tpc_ds.CheckQueries()
 	case "do":
 		j.DoTable()
 	}

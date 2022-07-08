@@ -30,7 +30,7 @@ var partitionTables = []string{
 	"web_returns",
 }
 
-var catalog_returns_table string = "CREATE TABLE `catalog_returns` (" +
+var catalog_returns_table = "CREATE TABLE `catalog_returns` (" +
 	"  `cr_returned_date_sk` int(11) ," +
 	"  `cr_returned_time_sk` int(11) DEFAULT NULL," +
 	"  `cr_item_sk` int(11) NOT NULL," +
@@ -60,7 +60,7 @@ var catalog_returns_table string = "CREATE TABLE `catalog_returns` (" +
 	"  `cr_net_loss` decimal(7,2) DEFAULT NULL," +
 	"  PRIMARY KEY (`cr_item_sk`,`cr_order_number`,`cr_returned_date_sk`)) "
 
-var catalog_sales_table string = "CREATE TABLE `catalog_sales` (" +
+var catalog_sales_table = "CREATE TABLE `catalog_sales` (" +
 	"  `cs_sold_date_sk` int(11) ," +
 	"  `cs_sold_time_sk` int(11) DEFAULT NULL," +
 	"  `cs_ship_date_sk` int(11) DEFAULT NULL," +
@@ -97,14 +97,14 @@ var catalog_sales_table string = "CREATE TABLE `catalog_sales` (" +
 	"  `cs_net_profit` decimal(7,2) DEFAULT NULL," +
 	"  PRIMARY KEY (`cs_item_sk`,`cs_order_number`,`cs_sold_date_sk`)) "
 
-var inventory_table string = "CREATE TABLE `inventory` (" +
+var inventory_table = "CREATE TABLE `inventory` (" +
 	"  `inv_date_sk` int(11) ," +
 	"  `inv_item_sk` int(11) NOT NULL," +
 	"  `inv_warehouse_sk` int(11) NOT NULL," +
 	"  `inv_quantity_on_hand` int(11) DEFAULT NULL," +
 	"  PRIMARY KEY (`inv_date_sk`,`inv_item_sk`,`inv_warehouse_sk`)) "
 
-var store_returns_table string = "CREATE TABLE `store_returns` (" +
+var store_returns_table = "CREATE TABLE `store_returns` (" +
 	"  `sr_returned_date_sk` int(11) ," +
 	"  `sr_return_time_sk` int(11) DEFAULT NULL," +
 	"  `sr_item_sk` int(11) NOT NULL," +
@@ -127,7 +127,7 @@ var store_returns_table string = "CREATE TABLE `store_returns` (" +
 	"  `sr_net_loss` decimal(7,2) DEFAULT NULL," +
 	"  PRIMARY KEY (`sr_item_sk`,`sr_ticket_number`,`sr_returned_date_sk`)) "
 
-var store_sales_table string = "CREATE TABLE `store_sales` (" +
+var store_sales_table = "CREATE TABLE `store_sales` (" +
 	"  `ss_sold_date_sk` int(11) ," +
 	"  `ss_sold_time_sk` int(11) DEFAULT NULL," +
 	"  `ss_item_sk` int(11) NOT NULL," +
@@ -153,7 +153,7 @@ var store_sales_table string = "CREATE TABLE `store_sales` (" +
 	"  `ss_net_profit` decimal(7,2) DEFAULT NULL," +
 	"  PRIMARY KEY (`ss_item_sk`,`ss_ticket_number`,`ss_sold_date_sk`)) "
 
-var web_returns_table string = "CREATE TABLE `web_returns` (" +
+var web_returns_table = "CREATE TABLE `web_returns` (" +
 	"  `wr_returned_date_sk` int(11) ," +
 	"  `wr_returned_time_sk` int(11) DEFAULT NULL," +
 	"  `wr_item_sk` int(11) NOT NULL," +
@@ -180,7 +180,7 @@ var web_returns_table string = "CREATE TABLE `web_returns` (" +
 	"  `wr_net_loss` decimal(7,2) DEFAULT NULL," +
 	"  PRIMARY KEY (`wr_item_sk`,`wr_order_number`,`wr_returned_date_sk`)) "
 
-var web_sales_table string = "CREATE TABLE `web_sales` (" +
+var web_sales_table = "CREATE TABLE `web_sales` (" +
 	"  `ws_sold_date_sk` int(11) ," +
 	"  `ws_sold_time_sk` int(11) DEFAULT NULL," +
 	"  `ws_ship_date_sk` int(11) DEFAULT NULL," +
@@ -225,7 +225,7 @@ type Job struct {
 func (j *Job) Partition() {
 	for tbl, key := range partitionKeyMap {
 
-		r, err := j.Conn.Execute(fmt.Sprintf(`select distinct %s from tpcds3t.%s order by %s;`, key, tbl, key))
+		r, err := j.Conn.Execute(fmt.Sprintf(`select distinct %s from test.%s order by %s;`, key, tbl, key))
 		if err != nil {
 			panic(err)
 		}
@@ -234,7 +234,7 @@ func (j *Job) Partition() {
 
 		var partitions []string
 		var partition string
-		var timeChunk string
+		var dateChunk string
 
 		first := true
 		for _, row := range r.Values {
@@ -245,11 +245,11 @@ func (j *Job) Partition() {
 					t := julian.JDToTime(float64(v.AsInt64())).String()
 					if first {
 						first = false
-						timeChunk = doMonthChunk(t)
+						dateChunk = doDateChunk(t)
 						partition = strconv.Itoa(int(v.AsInt64()))
 					} else {
-						if timeChunk != doMonthChunk(t) {
-							timeChunk = doMonthChunk(t)
+						if dateChunk != doDateChunk(t) {
+							dateChunk = doDateChunk(t)
 							partitions = append(partitions, partition)
 							partition = strconv.Itoa(int(v.AsInt64()))
 						}
@@ -287,7 +287,7 @@ func (j *Job) Partition() {
 	}
 }
 
-func doMonthChunk(time string) string {
+func doDateChunk(time string) string {
 	return strings.Split(time, "-")[0] + "-" + strings.Split(time, "-")[1]
 }
 
@@ -327,17 +327,19 @@ func (j *Job) DoTable() {
 		case "rows":
 			r, err := j.Conn.Execute(fmt.Sprintf("select count(*) from %s;", table))
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				continue
 			}
 			for _, row := range r.Values {
 				fmt.Printf("%s: %d\n", table, row[0].AsInt64())
 			}
 		case "analyze":
+			startTime := time.Now()
 			_, err := j.Conn.Execute(fmt.Sprintf("%s table %s;", j.Do, row[0].AsString()))
 			if err != nil {
 				panic(err)
 			}
-			fmt.Printf("%s table %s complete\n", j.Do, row[0].AsString())
+			fmt.Printf("%s table %s complete, duration: %s\n", j.Do, row[0].AsString(), time.Since(startTime))
 		case "":
 			_, err := j.Conn.Execute(fmt.Sprintf("alter table %s set tiflash mode fast;", row[0].AsString()))
 			if err != nil {
@@ -368,16 +370,20 @@ var variables = []string{
 
 func (j *Job) CheckResultSet() {
 
-	rFile, err := ioutil.ReadDir("/root/tpcds/sql/r")
+	rFile, err := ioutil.ReadDir("/Users/yuyang/go/src/saber/tpc-ds/r")
 	if err != nil {
 		panic(err)
 	}
 
 	for _, rf := range rFile {
 
+		if rf.Name() == "q14_0.sql" || rf.Name() == "q14_1.sql" || rf.Name() == "q23_0.sql" || rf.Name() == "q23_1.sql" || rf.Name() == "q23_1.sql" || rf.Name() == "q97.sql" {
+			continue
+		}
+
 		fmt.Printf("%s | ", rf.Name())
 
-		conn, err := client.Connect("172.16.5.133:4000", "root", "", "tp")
+		conn, err := client.Connect("10.2.102.83:4000", "root", "", "test")
 		for _, v := range variables {
 			_, err := conn.Execute(v)
 			if err != nil {
@@ -386,7 +392,7 @@ func (j *Job) CheckResultSet() {
 		}
 
 		// renew SQL
-		rfbs, err := ioutil.ReadFile(fmt.Sprintf("/root/tpcds/sql/r/%s", rf.Name()))
+		rfbs, err := ioutil.ReadFile(fmt.Sprintf("/Users/yuyang/go/src/saber/tpc-ds/r/%s", rf.Name()))
 		if err != nil {
 			panic(err)
 		}
@@ -404,7 +410,7 @@ func (j *Job) CheckResultSet() {
 		}
 
 		// original SQL
-		ofbs, err := ioutil.ReadFile(fmt.Sprintf("/root/tpcds/sql/o/%s", rf.Name()))
+		ofbs, err := ioutil.ReadFile(fmt.Sprintf("/Users/yuyang/go/src/saber/tpc-ds/o/%s", rf.Name()))
 		if err != nil {
 			panic(err)
 		}
@@ -427,6 +433,29 @@ func (j *Job) CheckResultSet() {
 		} else {
 			fmt.Println(" success")
 		}
+
 	}
 
+}
+
+func CheckQueries() {
+
+	fs1, err := ioutil.ReadDir("/root/150")
+	if err != nil {
+		panic(err)
+	}
+
+	for _, f1 := range fs1 {
+		f1bs, err := ioutil.ReadFile(fmt.Sprintf("/root/150/%s", f1.Name()))
+		if err != nil {
+			panic(err)
+		}
+		f2bs, err := ioutil.ReadFile(fmt.Sprintf("/root/3t/%s", f1.Name()))
+		if err != nil {
+			panic(err)
+		}
+		if string(f1bs) != string(f2bs) {
+			fmt.Println(f1.Name())
+		}
+	}
 }

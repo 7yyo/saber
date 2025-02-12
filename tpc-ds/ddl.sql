@@ -1,6 +1,6 @@
 CREATE TABLE `catalog_returns`
 (
-    `cr_returned_date_sk`      int(11) NOT NULL,
+    `cr_returned_date_sk`      int(11) DEFAULT NULL,
     `cr_returned_time_sk`      int(11)       DEFAULT NULL,
     `cr_item_sk`               int(11) NOT NULL,
     `cr_refunded_customer_sk`  int(11)       DEFAULT NULL,
@@ -26,8 +26,7 @@ CREATE TABLE `catalog_returns`
     `cr_refunded_cash`         decimal(7, 2) DEFAULT NULL,
     `cr_reversed_charge`       decimal(7, 2) DEFAULT NULL,
     `cr_store_credit`          decimal(7, 2) DEFAULT NULL,
-    `cr_net_loss`              decimal(7, 2) DEFAULT NULL,
-    PRIMARY KEY (`cr_item_sk`, `cr_order_number`, `cr_returned_date_sk`) /*T![clustered_index] NONCLUSTERED */
+    `cr_net_loss`              decimal(7, 2) DEFAULT NULL
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_bin
@@ -105,7 +104,7 @@ CREATE TABLE `catalog_returns`
 
 CREATE TABLE `catalog_sales`
 (
-    `cs_sold_date_sk`          int(11) NOT NULL,
+    `cs_sold_date_sk`          int(11) DEFAULT NULL,
     `cs_sold_time_sk`          int(11)       DEFAULT NULL,
     `cs_ship_date_sk`          int(11)       DEFAULT NULL,
     `cs_bill_customer_sk`      int(11)       DEFAULT NULL,
@@ -138,8 +137,7 @@ CREATE TABLE `catalog_sales`
     `cs_net_paid_inc_tax`      decimal(7, 2) DEFAULT NULL,
     `cs_net_paid_inc_ship`     decimal(7, 2) DEFAULT NULL,
     `cs_net_paid_inc_ship_tax` decimal(7, 2) DEFAULT NULL,
-    `cs_net_profit`            decimal(7, 2) DEFAULT NULL,
-    PRIMARY KEY (`cs_item_sk`, `cs_order_number`, `cs_sold_date_sk`) /*T![clustered_index] NONCLUSTERED */
+    `cs_net_profit`            decimal(7, 2) DEFAULT NULL
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_bin
@@ -212,8 +210,7 @@ CREATE TABLE `inventory`
     `inv_date_sk`          int(11) NOT NULL,
     `inv_item_sk`          int(11) NOT NULL,
     `inv_warehouse_sk`     int(11) NOT NULL,
-    `inv_quantity_on_hand` int(11) DEFAULT NULL,
-    PRIMARY KEY (`inv_date_sk`, `inv_item_sk`, `inv_warehouse_sk`) /*T![clustered_index] NONCLUSTERED */
+    `inv_quantity_on_hand` int(11) DEFAULT NULL
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_bin
@@ -282,7 +279,7 @@ CREATE TABLE `inventory`
 
 CREATE TABLE `store_returns`
 (
-    `sr_returned_date_sk`   int(11) NOT NULL,
+    `sr_returned_date_sk`   int(11) DEFAULT NULL,
     `sr_return_time_sk`     int(11)       DEFAULT NULL,
     `sr_item_sk`            int(11) NOT NULL,
     `sr_customer_sk`        int(11)       DEFAULT NULL,
@@ -301,8 +298,7 @@ CREATE TABLE `store_returns`
     `sr_refunded_cash`      decimal(7, 2) DEFAULT NULL,
     `sr_reversed_charge`    decimal(7, 2) DEFAULT NULL,
     `sr_store_credit`       decimal(7, 2) DEFAULT NULL,
-    `sr_net_loss`           decimal(7, 2) DEFAULT NULL,
-    PRIMARY KEY (`sr_item_sk`, `sr_ticket_number`, `sr_returned_date_sk`) /*T![clustered_index] NONCLUSTERED */
+    `sr_net_loss`           decimal(7, 2) DEFAULT NULL
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_bin
@@ -378,7 +374,7 @@ CREATE TABLE `store_returns`
 
 CREATE TABLE `store_sales`
 (
-    `ss_sold_date_sk`       int(11) NOT NULL,
+    `ss_sold_date_sk`       int(11) DEFAULT NULL,
     `ss_sold_time_sk`       int(11)       DEFAULT NULL,
     `ss_item_sk`            int(11) NOT NULL,
     `ss_customer_sk`        int(11)       DEFAULT NULL,
@@ -400,8 +396,7 @@ CREATE TABLE `store_sales`
     `ss_coupon_amt`         decimal(7, 2) DEFAULT NULL,
     `ss_net_paid`           decimal(7, 2) DEFAULT NULL,
     `ss_net_paid_inc_tax`   decimal(7, 2) DEFAULT NULL,
-    `ss_net_profit`         decimal(7, 2) DEFAULT NULL,
-    PRIMARY KEY (`ss_item_sk`, `ss_ticket_number`, `ss_sold_date_sk`) /*T![clustered_index] NONCLUSTERED */
+    `ss_net_profit`         decimal(7, 2) DEFAULT NULL
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_bin
@@ -472,7 +467,7 @@ CREATE TABLE `store_sales`
 
 CREATE TABLE `web_returns`
 (
-    `wr_returned_date_sk`      int(11) NOT NULL,
+    `wr_returned_date_sk`      int(11) DEFAULT NULL,
     `wr_returned_time_sk`      int(11)       DEFAULT NULL,
     `wr_item_sk`               int(11) NOT NULL,
     `wr_refunded_customer_sk`  int(11)       DEFAULT NULL,
@@ -495,8 +490,7 @@ CREATE TABLE `web_returns`
     `wr_refunded_cash`         decimal(7, 2) DEFAULT NULL,
     `wr_reversed_charge`       decimal(7, 2) DEFAULT NULL,
     `wr_account_credit`        decimal(7, 2) DEFAULT NULL,
-    `wr_net_loss`              decimal(7, 2) DEFAULT NULL,
-    PRIMARY KEY (`wr_item_sk`, `wr_order_number`, `wr_returned_date_sk`) /*T![clustered_index] NONCLUSTERED */
+    `wr_net_loss`              decimal(7, 2) DEFAULT NULL
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_bin
@@ -577,7 +571,7 @@ CREATE TABLE `web_returns`
 
 CREATE TABLE `web_sales`
 (
-    `ws_sold_date_sk`          int(11) NOT NULL,
+    `ws_sold_date_sk`          int(11) DEFAULT NULL,
     `ws_sold_time_sk`          int(11)       DEFAULT NULL,
     `ws_ship_date_sk`          int(11)       DEFAULT NULL,
     `ws_item_sk`               int(11) NOT NULL,
@@ -610,8 +604,7 @@ CREATE TABLE `web_sales`
     `ws_net_paid_inc_tax`      decimal(7, 2) DEFAULT NULL,
     `ws_net_paid_inc_ship`     decimal(7, 2) DEFAULT NULL,
     `ws_net_paid_inc_ship_tax` decimal(7, 2) DEFAULT NULL,
-    `ws_net_profit`            decimal(7, 2) DEFAULT NULL,
-    PRIMARY KEY (`ws_item_sk`, `ws_order_number`, `ws_sold_date_sk`) /*T![clustered_index] NONCLUSTERED */
+    `ws_net_profit`            decimal(7, 2) DEFAULT NULL
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_bin
